@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <title>Document</title>
+    <script>
+        const SERVER_URL = window.location.href;
+        let socket = io(SERVER_URL, { autoConnect: false});
+        let input;
+        let text;
+        let name;
+
+        window.onload = () => {
+            input = document.getElementById("input");
+            text = document.getElementById("text");
+            name = prompt("enter name:");
+            socket.connect();
+            socket.emit("data", {status: 'login', name: name});
+            socket.emit("data", {status: 'length'}); //ask for the list of people who are online
+        }
+
+        let sendMsg = (msg) => {
+            socket.emit("message", msg);
+        }
+
+        socket.on("data", (data) => {
+            console.log(data);
+            if(data.status === "msg"){
+                text.value+="\n"+data.sender+":"+data.message;
+            }
+            else if(data.status === "login"){
+                setTimeout(() => {
+                    alert(data.name+"has joined");
+                },1)
+            }
+            else if(data.status === "length"){
+                //TODO: implement a display showing who is online
+            }
+        });
+        let send = () => {
+            sendMsg(input.value);
+        }
+    </script>
+</head>
+<body>
+    <textarea id="text" style="width: 100vw; height: 80vh;"></textarea><br>
+    <input id="input">
+    <button onclick="send()">send</button>
+</body>
+</html>
